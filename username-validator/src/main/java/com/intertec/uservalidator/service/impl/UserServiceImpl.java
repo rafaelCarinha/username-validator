@@ -23,20 +23,23 @@ import com.intertec.uservalidator.util.StringUtil;
 public class UserServiceImpl implements UserService {
 	
 	@Autowired
-	private ForbiddenWordRepository forbiddenWordRepository;
+	private ForbiddenWordRepository    forbiddenWordRepository;
 	
 	@Autowired
-	private UserRepository 			userRepository;
+	private UserRepository 			   userRepository;
 	
-	private boolean validUsername = true;
+	private boolean forbiddenWord      = false;
 	
-	private static final Logger LOG = LoggerFactory.getLogger(UserServiceImpl.class);
+	private List<String> possibleWords =  new ArrayList<>();
+	
+	private static final Logger LOG    = LoggerFactory.getLogger(UserServiceImpl.class);
 
 
 	@Override
 	public Map<Boolean, List<String>>  saveUser(String userName) {
 		
 		Map<Boolean, List<String>> result = new HashMap<>();
+		
 		
 		//Check if word has at least 6 characters (Otherwise, throw Exception)
 		if(StringUtil.isNullOrEmpty(userName)){
@@ -55,19 +58,18 @@ public class UserServiceImpl implements UserService {
 		//If Word is forbidden, throw ForbiddenWordException
 		forbiddenWords.forEach(word->{
 			if(userName.equalsIgnoreCase(word.getWord())){
-				validUsername = false;
-				List<String> possibleWords =  new ArrayList<>();
+				forbiddenWord = true;
  				//Reverse word				
 				StringBuilder str = new StringBuilder(userName);
 				//Return Map with 14 words
 				possibleWords = returnPossibleWords(str.reverse().toString());
-				result.put(validUsername, possibleWords);
 				LOG.error("Forbidden Word for Username Found: "+userName);
-				LOG.error("Returning possible words: "+result.toString());
 			}
 		});
 		
-		if(!validUsername){
+		if(forbiddenWord){
+			LOG.error("Returning possible words: "+result.toString());
+			result.put(false, possibleWords);
 			return result;
 			
 		}else{
@@ -76,7 +78,6 @@ public class UserServiceImpl implements UserService {
 			User user = userRepository.findUserByName(userName);
 			
 			if(user!=null){
-				List<String> possibleWords =  new ArrayList<>();
 				//Return Map with 14 words
 				possibleWords = returnPossibleWords(userName);
 				result.put(false, possibleWords);
