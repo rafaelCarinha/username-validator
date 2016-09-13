@@ -37,6 +37,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public Map<Boolean, List<String>>  saveUser(String userName) {
+		forbiddenWord = false;
 		
 		Map<Boolean, List<String>> result = new HashMap<>();
 		
@@ -68,8 +69,8 @@ public class UserServiceImpl implements UserService {
 		});
 		
 		if(forbiddenWord){
-			LOG.error("Returning possible words: "+result.toString());
 			result.put(false, possibleWords);
+			LOG.error("Returning possible words: "+result.toString());
 			return result;
 			
 		}else{
